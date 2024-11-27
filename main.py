@@ -4,6 +4,7 @@ from io import StringIO
 from PIL import Image
 import os
 from dotenv import load_dotenv
+import time
 
 load_dotenv()
 # -------------------------------- API config -------------------------------- #
@@ -21,6 +22,16 @@ def query(uploaded_file):
     
     # Check if the response is successful (status code 200)
     if response.status_code == 200:
+        try:
+            # Try to decode the JSON response
+            return response.json()
+        except ValueError:
+            # If response is not valid JSON, return a message
+            st.error("Failed to decode the response as JSON. Response content: " + response.text)
+            return None
+    elif response.status_code == 503:
+        time.sleep(10)
+        response = requests.post(API_URL, headers=headers, data=data)
         try:
             # Try to decode the JSON response
             return response.json()
